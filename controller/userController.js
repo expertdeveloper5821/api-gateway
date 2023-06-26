@@ -131,7 +131,7 @@ const createRole = async (roleDetails, res) => {
 /**
  * @DESC To Login the user (ADMIN, SUPER_ADMIN, USER)
  */
-const userLogin = async (userCreds, role, res) => {
+const userLogin = async (userCreds, res) => {
   let { username, password } = userCreds;
 
   // Check if the username is in the database
@@ -143,13 +143,13 @@ const userLogin = async (userCreds, role, res) => {
     });
   }
 
-  // Check the role
-  if (user.role !== role) {
-    return res.status(403).json({
-      message: "Please make sure you are logging in from the right portal.",
-      success: false,
-    });
-  }
+  // // Check the role
+  // if (user.role !== role) {
+  //   return res.status(403).json({
+  //     message: "Please make sure you are logging in from the right portal.",
+  //     success: false,
+  //   });
+  // }
 
   // Check the password
   let isMatch = await bcrypt.compare(password, user.password);
