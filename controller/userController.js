@@ -99,7 +99,7 @@ const createRole = async (roleDetails, res) => {
       });
     }
 
-    // validate the email
+    // Validate the email
     let emailNotRegistered = await validateEmail(roleDetails.email);
     if (!emailNotRegistered) {
       return res.status(400).json({
@@ -107,6 +107,7 @@ const createRole = async (roleDetails, res) => {
         success: false,
       });
     }
+
     const password = await bcrypt.hash(roleDetails.password, 12);
     // Create a new role
     const newRole = new User({
@@ -115,14 +116,27 @@ const createRole = async (roleDetails, res) => {
     });
 
     await newRole.save();
+
+    // Configure the email message
+    const mailOptions = {
+      from: process.env.EMAIL_FROM,
+      to: roleDetails.email,
+      subject: `Login Credentials`,
+      text: `Hello ${roleDetails.name},\n\nYour new role has been created successfully.\n\nUsername: ${roleDetails.username}\nPassword: ${roleDetails.password}\n\nPlease keep this information secure.\n\nRegards,\nYour Application`,
+    };
+
+    // Send the email
+    await transporter.sendMail(mailOptions);
+
     return res.status(201).json({
-      message: "Role created successfully",
+      message:
+        "Role created successfully. An email with login credentials has been sent.",
       success: true,
     });
   } catch (err) {
     console.log(err);
     return res.status(500).json({
-      message: "Unable to create role",
+      message: "Unable to create role.",
       success: false,
     });
   }
@@ -142,14 +156,6 @@ const userLogin = async (userCreds, res) => {
       success: false,
     });
   }
-
-  // // Check the role
-  // if (user.role !== role) {
-  //   return res.status(403).json({
-  //     message: "Please make sure you are logging in from the right portal.",
-  //     success: false,
-  //   });
-  // }
 
   // Check the password
   let isMatch = await bcrypt.compare(password, user.password);
@@ -375,7 +381,6 @@ const resetPassword = async (req, res) => {
   }
 };
 
-
 // change password after login
 const changePassword = async (req, res) => {
   const { oldPassword, newPassword, confirmPassword } = req.body;
@@ -428,6 +433,34 @@ const changePassword = async (req, res) => {
 };
 
 
+// update student details by id
+const updateStudentById = async (req, res) => {
+  try {
+    const { _id } = req.params;
+    const update = req.body;
+    const options = { new: true }; // Return the updated document
+    const updatedDoc = await User.findByIdAndUpdate(_id, update, options);
+
+    if (!updatedDoc) {
+      return res.status(404).json({
+        error: { message: `Student with ID ${_id} not found.` },
+      });
+    }
+
+    res.status(200).json({
+      message: "Student updated successfully.",
+      data: updatedDoc,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      message: "Unable to change the password.",
+      success: false,
+    });
+  }
+};
+
+
 module.exports = {
   userAuth,
   checkRole,
@@ -441,5 +474,6 @@ module.exports = {
   deleteRoleById,
   sendForgetPasswordEmail,
   resetPassword,
-  changePassword
+  changePassword,
+  updateStudentById
 };
