@@ -18,7 +18,8 @@ const {
   deleteRoleById,
   sendForgetPasswordEmail,
   resetPassword,
-  changePassword
+  changePassword,
+  updateStudentById
 } = require("../controller/userController");
 
 
@@ -159,5 +160,10 @@ router.post('/reset-password', async (req, res) => {
 // change password
 router.post('/change-password/:_id', async (req, res) => {
   await changePassword(req, res);
+ });
+
+ // change password
+router.put('/update-student-details/:_id', async (req, res) => {
+  await updateStudentById(req, res);
  });
 module.exports = router;
